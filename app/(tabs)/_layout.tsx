@@ -25,18 +25,19 @@ export default function TabLayout() {
           },
           default: {},
         }),
-      }}>
+      }}
+    >
       <Tabs.Screen
-        name="index"
+        name="index" // Nombre único para la primera pantalla
         options={{
-          title: 'Home',
+          title: 'Basic Nivelator',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="AdvancedNivelator" // Nombre único para la segunda pantalla
         options={{
-          title: 'Explore',
+          title: 'Advanced Nivelator',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
         }}
       />

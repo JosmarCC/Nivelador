@@ -1,34 +1,38 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { StyleSheet, Text, View, Animated } from 'react-native';
-import { Accelerometer } from 'expo-sensors';
+import SensorData from '@/hooks/SensorData';
 
-export default function HomeScreen() {
-  const [data, setData] = useState({ x: 0, y: 0, z: 0 });
+export default function BasicNivelator() {
+  const data = SensorData();
   const rotationX = useRef(new Animated.Value(0)).current;
   const rotationY = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    let subscription = Accelerometer.addListener((accelerometerData) => {
-      setData(accelerometerData);
+    Animated.spring(rotationX, {
+      toValue: data.x * 45,
+      useNativeDriver: true,
+    }).start();
 
-      Animated.spring(rotationX, {
-        toValue: accelerometerData.x * 45,
-        useNativeDriver: true,
-      }).start();
+    Animated.spring(rotationY, {
+      toValue: data.y * -45,
+      useNativeDriver: true,
+    }).start();
+  }, [data]);
 
-      Animated.spring(rotationY, {
-        toValue: accelerometerData.y * -45, 
-        useNativeDriver: true,
-      }).start();
-    });
+  // Calcula la distancia al centro (0,0) en 2D
+  const distance = Math.sqrt(data.x ** 2 + data.y ** 2);
 
-    return () => subscription && subscription.remove();
-  }, []);
+  // Determina el color basado en la distancia
+  const getColor = () => {
+    if (distance < 0.02) return 'green';
+    if (distance < 0.3) return 'orange';
+    return 'red';
+  };
 
   return (
     <View style={styles.container}>
       <View style={styles.title}>
-        <Text>Josmar Company</Text>
+        <Text style={styles.text}>Nivelator</Text>
       </View>
 
       <View style={styles.levelContainer}>
@@ -36,25 +40,24 @@ export default function HomeScreen() {
           style={[
             styles.level,
             {
+              backgroundColor: getColor(),
               transform: [
-                { rotateX: rotationY.interpolate({
-                  inputRange:[-45, 45],
-                  outputRange:['-45deg', '45deg']
-                }) },
-                { rotateY: rotationX.interpolate({
-                  inputRange:[-45, 45],
-                  outputRange:['-45deg', '45deg']
-                }) },
+                {
+                  rotateX: rotationY.interpolate({
+                    inputRange: [-45, 45],
+                    outputRange: ['-45deg', '45deg'],
+                  }),
+                },
+                {
+                  rotateY: rotationX.interpolate({
+                    inputRange: [-45, 45],
+                    outputRange: ['-45deg', '45deg'],
+                  }),
+                },
               ],
             },
           ]}
         />
-      </View>
-
-      <View style={styles.information}>
-        <Text style={styles.text}>Inclinación horizontal, Eje X: {data.x.toFixed(2)}</Text>
-        <Text style={styles.text}>Inclinación vertical, Eje Y: {data.y.toFixed(2)}</Text>
-        <Text style={styles.text}>Profundidad, Eje Z: {data.z.toFixed(2)}</Text>
       </View>
     </View>
   );
@@ -64,30 +67,31 @@ const styles = StyleSheet.create({
   title: {
     marginTop: 50,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   information: {
-    flex: 1,
-    justifyContent: 'center',
+    position: 'absolute',
+    bottom: 20,
+    width: '100%',
     alignItems: 'center',
   },
   container: {
     flex: 1,
-    backgroundColor: '#f0f0f0',
     paddingTop: 50,
   },
   text: {
     fontSize: 20,
     marginBottom: 10,
+    color: '#FFFFFF',
   },
   levelContainer: {
-    alignItems: 'center',
+    flex: 1,
     justifyContent: 'center',
-    height: 200,
+    alignItems: 'center',
   },
   level: {
     width: 150,
     height: 150,
-    backgroundColor: 'lightblue',
     borderRadius: 10,
   },
 });
